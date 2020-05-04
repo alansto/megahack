@@ -8,10 +8,9 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.reactive.config.CorsRegistry;
 import org.springframework.web.reactive.config.WebFluxConfigurer;
-import org.springframework.web.reactive.config.WebFluxConfigurerComposite;
 
 @Configuration
-public class SecurityConfig {
+public class SecurityConfig implements WebFluxConfigurer {
 
     @Getter
     @Value("${security.secret-key}")
@@ -20,15 +19,12 @@ public class SecurityConfig {
     @Value("${security.encrypt-key}")
     private String encryptKey;
 
-    @Bean
-    WebFluxConfigurer corsConfigurer() {
-        return new WebFluxConfigurerComposite() {
-            @Override
-            public void addCorsMappings(CorsRegistry registry) {
-                registry.addMapping("/**").allowedOrigins("*")
-                        .allowedMethods("*");
-            }
-        };
+    @Override
+    public void addCorsMappings(CorsRegistry corsRegistry) {
+        corsRegistry.addMapping("/**")
+                .allowedOrigins("*")
+                .allowedMethods("*")
+                .maxAge(3600);
     }
 
     @Bean
