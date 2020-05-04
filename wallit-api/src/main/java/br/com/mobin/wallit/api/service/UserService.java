@@ -2,7 +2,6 @@ package br.com.mobin.wallit.api.service;
 
 import br.com.mobin.wallit.api.dto.SubscribedJourneyDTO;
 import br.com.mobin.wallit.api.dto.UserDTO;
-import br.com.mobin.wallit.api.model.JourneyModel;
 import br.com.mobin.wallit.api.model.UserModel;
 import br.com.mobin.wallit.api.repository.JourneyFilterRepository;
 import br.com.mobin.wallit.api.repository.UserRepository;
@@ -76,6 +75,7 @@ public class UserService {
                     .cpf( userDTO.getCpf() )
                     .fullName( userDTO.getFullName() )
                     .email( userDTO.getEmail() )
+                    .roles( userDTO.getRoles() )
                     .build();
         });
     }

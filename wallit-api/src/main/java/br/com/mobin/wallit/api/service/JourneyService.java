@@ -2,6 +2,7 @@ package br.com.mobin.wallit.api.service;
 
 import br.com.mobin.wallit.api.dto.JourneyDTO;
 import br.com.mobin.wallit.api.dto.SubscribedJourneyDTO;
+import br.com.mobin.wallit.api.integration.S3Integration;
 import br.com.mobin.wallit.api.model.JourneyModel;
 import br.com.mobin.wallit.api.model.SubscribedJourneyModel;
 import br.com.mobin.wallit.api.model.UserModel;
@@ -21,6 +22,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.codec.multipart.FilePart;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 import reactor.core.publisher.Mono;
@@ -38,6 +40,8 @@ public class JourneyService {
     private JourneyFilterRepository filterRepository;
     private JourneyRepository journeyRepository;
     private UserRepository userRepository;
+
+    private S3Integration storageIntegration;
 
     @HasRole(roles = WallitRoles.ROLE_ADMIN)
     public Mono<JourneyDTO> create(final JourneyDTO journeyDTO) {
@@ -189,6 +193,35 @@ public class JourneyService {
                 )
                 .flatMap(userRepository::save)
                 .then();
+    }
+
+    @HasRole(roles = WallitRoles.ROLE_USER)
+    public Mono<Void> deposit(final String id, final BigDecimal amount, final FilePart receipt) {
+
+        return Mono.subscriberContext().<AuthorizedUser>map(context -> context.get(SecurityHelper.AUTHORIZED_USER))
+                .flatMap(authorizedUser -> {
+                    var filename = id + "_"+ LocalDateTime.now().toString() +".jpg";
+                    return storageIntegration.put( receipt, filename, "image/jpeg" )
+                            .thenReturn( authorizedUser );
+                })
+                .flatMap(authorizedUser ->
+
+                    findUserById( authorizedUser.getId() )
+                            .map(userModel ->
+                                    userModel.withJourneys(
+                                            userModel.getJourneys().parallelStream()
+                                                    .map(subscribedJourneyModel -> {
+                                                        if (subscribedJourneyModel.getId().equals(id)) {
+                                                            return subscribedJourneyModel.withBalance(
+                                                                    subscribedJourneyModel.getBalance().add( amount )
+                                                            );
+                                                        }
+                                                        return subscribedJourneyModel;
+                                                    }).collect(Collectors.toList())
+                                    )
+                            )
+                            .flatMap(userRepository::save)
+                ).then();
     }
 
     private Mono<UserModel> findUserById(final String id) {

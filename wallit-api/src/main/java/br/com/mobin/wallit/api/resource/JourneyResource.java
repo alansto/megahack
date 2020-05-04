@@ -4,17 +4,22 @@ import br.com.mobin.wallit.api.dto.JourneyDTO;
 import br.com.mobin.wallit.api.dto.SubscribedJourneyDTO;
 import br.com.mobin.wallit.api.service.JourneyService;
 import lombok.AllArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
+import org.springframework.http.codec.multipart.FilePart;
+import org.springframework.http.codec.multipart.Part;
 import org.springframework.web.bind.annotation.*;
 import reactor.core.publisher.Mono;
 import javax.validation.Valid;
 import javax.validation.constraints.Max;
 import javax.validation.constraints.Min;
 import javax.validation.constraints.NotEmpty;
+import java.math.BigDecimal;
 
+@Slf4j
 @AllArgsConstructor
 @RestController
 @RequestMapping("/v1/journey")
@@ -61,9 +66,15 @@ public class JourneyResource {
         return journeyService.unsubscribeJourney( id );
     }
 
-    @PatchMapping("/{id}/deposit")
-    public Mono<Void> deposit() {
+    @PostMapping(value = "/{id}/deposit",consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public Mono<Void> deposit(  @PathVariable @NotEmpty String id,
+                                @RequestPart Mono<FilePart> receipt,
+                                @RequestPart Part amount) {
 
-        return Mono.empty();
+        log.info("Amount: "+amount);
+        return receipt.map(filePart -> {
+            log.info("Receipt: "+filePart.filename());
+            return filePart;
+        }).then();
     }
 }

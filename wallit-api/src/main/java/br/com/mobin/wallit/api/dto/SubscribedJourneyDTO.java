@@ -11,6 +11,7 @@ import javax.validation.constraints.Positive;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Value
 @JsonDeserialize(builder = SubscribedJourneyDTO.JacksonBuilder.class)
@@ -32,6 +33,8 @@ public class SubscribedJourneyDTO {
     LocalDate dueDate;
 
     LocalDateTime subscribed;
+
+    List<DepositDTO> deposits;
 
     @JsonPOJOBuilder(withPrefix = "")
     public static class JacksonBuilder{}

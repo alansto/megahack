@@ -1,6 +1,5 @@
 package br.com.mobin.wallit.api.resource;
 
-import br.com.mobin.wallit.api.dto.SubscribedJourneyDTO;
 import br.com.mobin.wallit.api.dto.UserDTO;
 import br.com.mobin.wallit.api.service.UserService;
 import lombok.AllArgsConstructor;
