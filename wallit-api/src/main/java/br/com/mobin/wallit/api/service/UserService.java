@@ -5,8 +5,11 @@ import br.com.mobin.wallit.api.dto.UserDTO;
 import br.com.mobin.wallit.api.model.UserModel;
 import br.com.mobin.wallit.api.repository.JourneyFilterRepository;
 import br.com.mobin.wallit.api.repository.UserRepository;
+import br.com.mobin.wallit.api.security.SecurityHelper;
 import br.com.mobin.wallit.api.security.WallitRoles;
+import br.com.mobin.wallit.core.security.model.AuthorizedUser;
 import br.com.mobin.wallit.core.security.model.HasRole;
+import br.com.mobin.wallit.core.security.model.Role;
 import br.com.mobin.wallit.core.security.utils.CryptoUtil;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -15,7 +18,10 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 import reactor.core.publisher.Mono;
+
+import java.math.BigDecimal;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
@@ -49,8 +55,36 @@ public class UserService {
 
     @HasRole(roles = {WallitRoles.ROLE_USER,WallitRoles.ROLE_ADMIN})
     public Mono<UserDTO> findById(final String id) {
-        return findModelById( id )
-                .map(this::parseTo);
+
+        return Mono.subscriberContext().<AuthorizedUser>map(context -> context.get(SecurityHelper.AUTHORIZED_USER))
+                .flatMap(authorizedUser -> {
+                    if ( authorizedUser.getRoles().stream().anyMatch(role -> role.equals(Role.ROLE_USER))
+                            && !authorizedUser.getId().equals(id) ) {
+                        return Mono.error(new ResponseStatusException(HttpStatus.FORBIDDEN, "User not Authorized"));
+                    }
+                    return findModelById( id ).map(this::parseTo);
+                });
+    }
+
+    @HasRole(roles = {WallitRoles.ROLE_USER,WallitRoles.ROLE_ADMIN})
+    public Mono<Map<String, BigDecimal>> findWalletByUserId(final String id) {
+
+        return Mono.subscriberContext().<AuthorizedUser>map(context -> context.get(SecurityHelper.AUTHORIZED_USER))
+                .flatMap(authorizedUser -> {
+                    if ( authorizedUser.getRoles().stream().anyMatch(role -> role.equals(Role.ROLE_USER))
+                            && !authorizedUser.getId().equals(id) ) {
+                        return Mono.error(new ResponseStatusException(HttpStatus.FORBIDDEN, "User not Authorized"));
+                    }
+                    return findModelById( id ).map(this::parseTo);
+                })
+                .map(userDTO ->
+                    Optional.ofNullable( userDTO.getJourneys() )
+                            .map(journeys ->
+                                journeys.parallelStream().collect(
+                                    Collectors.toMap(SubscribedJourneyDTO::getTitle, SubscribedJourneyDTO::getBalance)
+                                )
+                            ).orElse( Map.of() )
+                );
     }
 
     private Mono<UserModel> findModelById(final String id) {
