@@ -1,7 +1,5 @@
 package br.com.mobin.wallit.api.service;
 
-import br.com.mobin.wallit.api.dto.SubscribedJourneyDTO;
-import br.com.mobin.wallit.api.dto.UserDTO;
 import br.com.mobin.wallit.api.model.UserModel;
 import br.com.mobin.wallit.api.repository.UserFilterRepository;
 import br.com.mobin.wallit.api.repository.UserRepository;
@@ -35,7 +33,7 @@ public class AuthService {
         return Mono.fromCallable(() ->
             new Query().addCriteria(
                     Criteria.where("email").is(authRequestDTO.getEmail())
-                            .and("password").is(CryptoUtil.encrypt( authRequestDTO.getPassword() ))
+                            .and("password").is(CryptoUtil.encrypt( authRequestDTO.getPassword()))
             )
         )
         .flatMap(query ->
@@ -90,7 +88,7 @@ public class AuthService {
                     .cpf( signupDTO.getCpf() )
                     .fullName( signupDTO.getFullName() )
                     .email( signupDTO.getEmail() )
-                    .role(Role.ROLE_USER )
+                    .role( Role.ROLE_USER )
                     .build();
         });
     }

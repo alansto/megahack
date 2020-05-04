@@ -6,7 +6,6 @@ import lombok.Builder;
 import lombok.Value;
 import lombok.With;
 import org.hibernate.validator.constraints.br.CPF;
-
 import javax.validation.constraints.Email;
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.Size;
