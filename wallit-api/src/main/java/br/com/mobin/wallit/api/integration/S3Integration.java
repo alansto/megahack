@@ -8,8 +8,6 @@ import reactor.core.publisher.Mono;
 public class S3Integration {
 
     public Mono<Void> put(final FilePart file,String fileName, String contentType) {
-
-
         return Mono.empty();
     }
 }

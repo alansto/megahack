@@ -47,7 +47,7 @@ public class UserService {
                 .map(this::parseTo);
     }
 
-    @HasRole(roles = WallitRoles.ROLE_USER)
+    @HasRole(roles = {WallitRoles.ROLE_USER,WallitRoles.ROLE_ADMIN})
     public Mono<UserDTO> findById(final String id) {
         return findModelById( id )
                 .map(this::parseTo);
