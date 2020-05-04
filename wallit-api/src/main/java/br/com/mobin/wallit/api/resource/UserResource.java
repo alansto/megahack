@@ -9,6 +9,8 @@ import org.springframework.web.bind.annotation.*;
 import reactor.core.publisher.Mono;
 import javax.validation.Valid;
 import javax.validation.constraints.NotEmpty;
+import java.math.BigDecimal;
+import java.util.Map;
 
 @AllArgsConstructor
 @RestController
@@ -26,7 +28,11 @@ public class UserResource {
 
     @GetMapping("/{id}")
     public Mono<UserDTO> findById(@PathVariable @NotEmpty String id) {
-
         return userService.findById( id );
+    }
+
+    @GetMapping("/{id}/wallet")
+    public Mono<Map<String, BigDecimal>> wallet(@PathVariable @NotEmpty String id) {
+        return userService.findWalletByUserId( id );
     }
 }
