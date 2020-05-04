@@ -29,7 +29,6 @@ public class SecurityConfig implements WebFluxConfigurer {
 
     @Bean
     JWTAuthenticationFilter authenticationFilter(SecurityHelper securityHelper) {
-
         return new JWTAuthenticationFilter(serverWebExchange -> {
 
             String url = serverWebExchange.getRequest().getPath().value();
