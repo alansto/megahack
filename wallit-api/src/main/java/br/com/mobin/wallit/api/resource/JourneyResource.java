@@ -12,6 +12,7 @@ import org.springframework.http.MediaType;
 import org.springframework.http.codec.multipart.FilePart;
 import org.springframework.http.codec.multipart.Part;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.server.ResponseStatusException;
 import reactor.core.publisher.Mono;
 import javax.validation.Valid;
 import javax.validation.constraints.Max;
@@ -69,12 +70,12 @@ public class JourneyResource {
     @PostMapping(value = "/{id}/deposit",consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public Mono<Void> deposit(  @PathVariable @NotEmpty String id,
                                 @RequestPart Mono<FilePart> receipt,
-                                @RequestPart Part amount) {
+                                @RequestPart String amount) {
 
-        log.info("Amount: "+amount);
-        return receipt.map(filePart -> {
-            log.info("Receipt: "+filePart.filename());
-            return filePart;
-        }).then();
+        return receipt.flatMap(filePart ->
+            journeyService.deposit( id, new BigDecimal(amount), filePart )
+        ).onErrorResume(NumberFormatException.class::isInstance, ex ->
+            Mono.error(new ResponseStatusException(HttpStatus.BAD_REQUEST, "Amount value "+amount+" invalid"))
+        );
     }
 }

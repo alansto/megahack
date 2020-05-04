@@ -141,7 +141,12 @@ public class JourneyService {
                                 return userModel.withJourneys(
                                         Optional.ofNullable( userModel.getJourneys() )
                                                 .map(journeys -> {
-                                                    journeys.add(subscribe);
+                                                    var exists = journeys.parallelStream()
+                                                            .anyMatch(subscribedJourneyModel -> subscribedJourneyModel.getId().equals(subscribe.getId()));
+
+                                                    if (!exists)
+                                                        journeys.add(subscribe);
+
                                                     return journeys;
                                                 }).orElse( List.of( subscribe ) )
                                 ).withScore( 50 );
@@ -218,7 +223,7 @@ public class JourneyService {
                                                         }
                                                         return subscribedJourneyModel;
                                                     }).collect(Collectors.toList())
-                                    )
+                                    ).withScore( userModel.getScore() + 150 )
                             )
                             .flatMap(userRepository::save)
                 ).then();
