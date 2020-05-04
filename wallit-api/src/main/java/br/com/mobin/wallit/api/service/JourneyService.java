@@ -60,7 +60,7 @@ public class JourneyService {
         });
     }
 
-    @HasRole(roles = WallitRoles.ROLE_USER)
+    @HasRole(roles = {WallitRoles.ROLE_USER,WallitRoles.ROLE_ADMIN})
     public Mono<JourneyDTO> findById(final String id) {
         return findModelById( id ).map(this::parseTo);
     }
@@ -100,12 +100,12 @@ public class JourneyService {
                 );
     }
 
-    @HasRole(roles = WallitRoles.ROLE_USER)
+    @HasRole(roles = {WallitRoles.ROLE_USER,WallitRoles.ROLE_ADMIN})
     public Mono<Page<JourneyDTO>> findAll(final Pageable pageable) {
 
         final Query query = new Query().with(Sort.by(Sort.Direction.DESC, "title")).with(pageable);
 
-        return filterRepository.findAllByQuery( query)
+        return filterRepository.findAllByQuery( query )
                 .collectList()
                 .map(journeys ->
                     journeys.parallelStream()
@@ -120,7 +120,7 @@ public class JourneyService {
                 );
     }
 
-    @HasRole(roles = WallitRoles.ROLE_USER)
+    @HasRole(roles = {WallitRoles.ROLE_USER,WallitRoles.ROLE_ADMIN})
     public Mono<Void> subscribeJourney(final String journeyId, final SubscribedJourneyDTO journey) {
 
         return Mono.subscriberContext().<AuthorizedUser>map(context -> context.get(SecurityHelper.AUTHORIZED_USER))
@@ -152,7 +152,7 @@ public class JourneyService {
                 ).then();
     }
 
-    @HasRole(roles = WallitRoles.ROLE_USER)
+    @HasRole(roles = {WallitRoles.ROLE_USER,WallitRoles.ROLE_ADMIN})
     public Mono<Void> unsubscribeJourney(final String id) {
 
         return Mono.subscriberContext().<AuthorizedUser>map(context -> context.get(SecurityHelper.AUTHORIZED_USER))
@@ -195,7 +195,7 @@ public class JourneyService {
                 .then();
     }
 
-    @HasRole(roles = WallitRoles.ROLE_USER)
+    @HasRole(roles = {WallitRoles.ROLE_USER,WallitRoles.ROLE_ADMIN})
     public Mono<Void> deposit(final String id, final BigDecimal amount, final FilePart receipt) {
 
         return Mono.subscriberContext().<AuthorizedUser>map(context -> context.get(SecurityHelper.AUTHORIZED_USER))
